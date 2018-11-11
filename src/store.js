@@ -39,6 +39,13 @@ export default new Vuex.Store({
     changeGame(state, newGame) {
       state.gameID = newGame;
     },
+    // add player
+    addPlayer(state, player) {
+      if(state.players == null) {
+        state.players = [];
+      }
+      state.players.push(player);
+    },
     // update player score
     updateScore(state, newScore) {
       state.newScore = newScore;
@@ -52,6 +59,10 @@ export default new Vuex.Store({
     changeGame(context, game) {
       console.log('changed game to %s', game);
       context.commit('changeGame', name)
+    },
+    addPlayer(context, player) {
+      console.log('added %s to the game', player);
+      context.commit('addPlayer', player);
     },
     updateScore(context, score) {
       console.log('changed game to %s', score);
