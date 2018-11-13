@@ -1,43 +1,42 @@
 <template>
   <div>
     <!-- First game state (form) -->
-    <v-container v-if="state == 1" class="firstStage">
+    <v-container v-if="state == 1" class="cardStyle">
       <h1 style="text-align: center; margin-bottom: 20px;">yTrack</h1>
       <v-card class="center">
-        <v-card-title>
-          <h2 style="center">Join a game</h2>
-        </v-card-title>
         <v-container>
-          <v-text-field outline label="Game Pin" solo v-model="gameID">
+          <h2 style="padding-bottom: 5%;">Join a game</h2>
+          <v-text-field 
+           class="gamekeyInput" 
+           label="Game Pin" 
+           outline 
+           v-model="gameID">
           </v-text-field>
-        </v-container>
-        <v-card-actions>
           <v-btn v-on:click="joinGame()" color="success">
             join
           </v-btn>
-        </v-card-actions>
+        </v-container>
       </v-card>
       <h1 style="text-align: center; margin: 30px;">
         or
       </h1>
       <v-card class="center">
-        <v-card-actions>
-          <v-flex>
-            <v-btn class="align-center" style="margins: 0 auto; float: left;" v-on:click="makeGame()" color="success">
-              create
-            </v-btn>  
-          </v-flex>
-        </v-card-actions>
+        <v-container>
+          <v-btn v-on:click="makeGame()" color="success">
+            create
+          </v-btn>  
+        </v-container>
       </v-card>
     </v-container>
 
     <!-- This section is for specifically the player that creates the game -->
-    <v-container v-if="state == 2">
-      <v-card>
+    <v-container v-if="state == 2" class="cardStyle">
+      <v-card class="center">
         <v-container>
           <v-card-text>
-            <h1>What is your name, game creator?</h1>
+            <h2 style="padding-bottom: 5%;">Choose a name!</h2>
             <v-text-field
+             outline
              label="Name"
              v-model="name">
             </v-text-field>
@@ -48,35 +47,41 @@
     </v-container>
 
     <!-- This section should be for people who join the game -->
-    <v-container v-if="state == 3">
-      <v-card>
+    <v-container v-if="state == 3" class="cardStyle">
+      <v-card class="center">
         <v-container>
           <v-card-text>
-            <h1>What is your name?</h1>
+            <h2 style="padding-bottom: 5%;">Choose a name!</h2>
             <v-text-field
-             label="name"
+             label="Name"
              v-model="name">
             </v-text-field>
-            <v-btn color="success" v-on:click="addPlayer()">submit</v-btn>
+            <v-btn color="success" v-on:click="addPlayer()">join</v-btn>
           </v-card-text>
         </v-container>
       </v-card>
     </v-container>
 
     <!-- The lobby. In this lobby you can add points as well -->
-    <v-container v-if="state == 4">
-      <v-card>
+    <v-container v-if="state == 4" class="cardStyle">
+      <v-card class="center">
         <v-container>
           <v-card-text>
-            <h1>Share this key with your friends: {{gameID}}</h1>
-              <ul id="example-1">
-              <li v-for="player in players" v-bind:key="player">
-                {{ player }}, {{points[players.indexOf(player)]}}
-              </li>
-            </ul>
+            <h2>Share this key with your friends: </h2><p class="gameKey">{{gameID}}</p>
+            <div v-if="players.length >= 2" class="scoreboard">
+              <ul>
+                <li v-for="player in players" v-bind:key="player">
+                  {{ player }}, {{points[players.indexOf(player)]}}
+                </li>
+              </ul>
+            </div>
+            <div v-if="players.length = 1" class="scoreboard">
+              <h3>Invite some friends to start!</h3>
+            </div>
+
           </v-card-text>
           <v-card-text>
-            <h1>Add Points</h1>
+            <h2>Add Points</h2>
             <v-text-field
              label="add points"
              v-model.number="increments">
@@ -86,6 +91,7 @@
         </v-container>
       </v-card>
     </v-container>
+    <!-- Alert -->
     <v-snackbar
       v-model="snackbar"
       :color="color"
@@ -122,7 +128,7 @@ export default {
       state: 1, 
       name: null,
       gameID: null,
-      color: 'success',
+      snackbarColor: 'success',
       playerNumber: null,
       snackbar: false,
       snackbarText: null,
@@ -146,9 +152,10 @@ export default {
       this.state = 2;
     },
     //after making a name, the lobby is created, along with his name
-    alert (text) {
+    alert (text, purpose) {
       this.snackbarText = text;
       this.snackbar = true;
+      this.snackbarColor = purpose
     },
     createGame () {
       var gamekey = randomstring.generate(5);
@@ -161,7 +168,7 @@ export default {
       this.playersRef.on("value", (snap) => {
         Object.assign(this, snap.val());
       }) 
-      alert("Game created!");
+      this.alert("Game created!", "success");
       this.state = 4;
       this.playerNumber = 0;
     },
@@ -169,7 +176,7 @@ export default {
     //The players who join the game that has been created
     joinGame () {
       if(this.gameID == null || this.gameID == "") {
-        this.alert("You need to enter a Game Key!");
+        this.alert("You need to enter a Game Key!", "error");
         return;
       }
       console.log(this);
@@ -179,7 +186,7 @@ export default {
         Object.assign(this, snap.val()); //assigns the object to the number designated: 1, 2, 3, 4, 5...
         console.log(this)
       }) 
-      this.alert("Joined Game!")
+      this.alert("Joined Game!", "success")
       this.state = 3;
     },
     //after making their name, they are inputted into the list of players and moved to the lobby
@@ -211,12 +218,19 @@ export default {
   margin: auto;
   width: 30%;
 }
-.firstStage {
-  margin-top: 80px;
+.cardStyle {
+  margin-top: 7%;
 }
 h1 {
   font-size: 55px;
   color: white;
   text-shadow: 0px 1px 1px black;
+}
+.scoreboard {
+  margin-top: 5%;
+}
+.gameKey{
+  color: teal;
+  font-size: 25px;
 }
 </style>
