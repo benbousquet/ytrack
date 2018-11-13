@@ -5,9 +5,11 @@
 <script>
   import GameForm from '../components/GameForm'
 
+
+
   export default {
     components: {
-      GameForm
+      GameForm,
     }
   }
 </script>
