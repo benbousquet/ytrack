@@ -1,22 +1,32 @@
 <template>
   <div>
     <!-- First game state (form) -->
-    <v-container v-if="state == 1">
-      <v-card>
+    <v-container v-if="state == 1" class="firstStage">
+      <h1 style="text-align: center; margin-bottom: 20px;">yTrack</h1>
+      <v-card class="center">
         <v-card-title>
-          <h1>enter game key</h1>
+          <h2 style="center">Join a game</h2>
         </v-card-title>
         <v-container>
-          <v-text-field label="Game ID" v-model="gameID">
+          <v-text-field outline label="Game Pin" solo v-model="gameID">
           </v-text-field>
         </v-container>
         <v-card-actions>
           <v-btn v-on:click="joinGame()" color="success">
             join
           </v-btn>
-          <v-btn v-on:click="makeGame()" color="success">
-            create
-          </v-btn>
+        </v-card-actions>
+      </v-card>
+      <h1 style="text-align: center; margin: 30px;">
+        or
+      </h1>
+      <v-card class="center">
+        <v-card-actions>
+          <v-flex>
+            <v-btn class="align-center" style="margins: 0 auto; float: left;" v-on:click="makeGame()" color="success">
+              create
+            </v-btn>  
+          </v-flex>
         </v-card-actions>
       </v-card>
     </v-container>
@@ -76,7 +86,21 @@
         </v-container>
       </v-card>
     </v-container>
-
+    <v-snackbar
+      v-model="snackbar"
+      :color="color"
+      :timeout="timeout"
+      :top="snackbarPos"
+    >
+      {{ snackbarText }}
+      <v-btn
+        dark
+        flat
+        @click="snackbar = false"
+      >
+        Close
+      </v-btn>
+    </v-snackbar>
   </div>
 </template>
         
@@ -98,7 +122,12 @@ export default {
       state: 1, 
       name: null,
       gameID: null,
+      color: 'success',
       playerNumber: null,
+      snackbar: false,
+      snackbarText: null,
+      timeout: 2000,
+      snackbarPos: "true",
     }
   },
   methods: {
@@ -117,6 +146,10 @@ export default {
       this.state = 2;
     },
     //after making a name, the lobby is created, along with his name
+    alert (text) {
+      this.snackbarText = text;
+      this.snackbar = true;
+    },
     createGame () {
       var gamekey = randomstring.generate(5);
       this.gameID = gamekey;
@@ -128,17 +161,25 @@ export default {
       this.playersRef.on("value", (snap) => {
         Object.assign(this, snap.val());
       }) 
-
+      alert("Game created!");
       this.state = 4;
       this.playerNumber = 0;
     },
 
     //The players who join the game that has been created
-     joinGame () {
+    joinGame () {
+      if(this.gameID == null || this.gameID == "") {
+        this.alert("You need to enter a Game Key!");
+        return;
+      }
+      console.log(this);
       this.playersRef = gamesRef.child(this.gameID);
+      console.log('after')
       this.playersRef.on("value", (snap) => { //make it real time referencing the players 
         Object.assign(this, snap.val()); //assigns the object to the number designated: 1, 2, 3, 4, 5...
+        console.log(this)
       }) 
+      this.alert("Joined Game!")
       this.state = 3;
     },
     //after making their name, they are inputted into the list of players and moved to the lobby
@@ -162,19 +203,20 @@ export default {
     },
   },
 
-  //template code I have no idea is the use for but Ben had this code here so it's probably important lol
-  created () {
-    gamesRef.on('child_changed', snapshot => {
-      // if(this.)
-      const updatedGame = this.messages.find(message => message.id === snapshot.key)
-      updatedMessage.text = snapshot.val().text
-      if (snapshot.val(). nickname!== this.nickname) {
-        nativeToast({
-          message: `Message edited by ${snapshot.val().nickname}`,
-          type: 'info'
-        })
-      }
-    })
-  }
 }
 </script>
+
+<style>
+.center {
+  margin: auto;
+  width: 30%;
+}
+.firstStage {
+  margin-top: 80px;
+}
+h1 {
+  font-size: 55px;
+  color: white;
+  text-shadow: 0px 1px 1px black;
+}
+</style>
